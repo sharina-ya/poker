@@ -78,8 +78,8 @@ class PokerUI:
             player_x, player_y = self.player_positions[i]
 
             # Проверяем, не пересекается ли позиция с областью информации
-            if player_x > INFO_AREA_X - 100:
-                player_x = INFO_AREA_X - 100
+            #if player_x > INFO_AREA_X - 100:
+                #player_x = INFO_AREA_X - 100
 
             # Определяем цвет игрока
             if i >= self.num_players:
