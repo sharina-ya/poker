@@ -16,10 +16,10 @@ def get_player_count():
     player_count = 3
     buttons = []
 
-    for i in range(2, 7):
+    for i in range(2, 5):
         buttons.append({
             "num": i,
-            "rect": pygame.Rect(150 + (i - 2) * 60, 200, 50, 50),
+            "rect": pygame.Rect(220 + (i - 2) * 60, 220, 50, 50),
             "text": str(i)
         })
 
