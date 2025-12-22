@@ -1,5 +1,14 @@
 import random
 from enum import Enum
+import hashlib
+import random
+import os
+import json
+import base64
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
 
 
 class Suit(Enum):
@@ -48,6 +57,7 @@ class Card:
         self.visible = False
         self.x = 0
         self.y = 0
+        self.id = 0
 
     def __str__(self):
         if self.visible:
@@ -69,22 +79,91 @@ class Card:
         return (0, 0, 0)
 
 
-class Deck:
+class Dealer:
     def __init__(self):
         self.cards = []
-        self.reset()
+        private_key, public_key = self.generate_key_pair()
 
-    def reset(self):
-        """Создать новую колоду и перемешать"""
+        self.private_key = private_key
+        self.public_key = public_key
+
+        print(f"Приватный ключ дилера:", self.private_key)
+        print(f"Публичный ключ дилера:", self.public_key)
+
+        self.players_public_keys = []
+
+    def generate_key_pair(self):
+        print("Создаются ключи для дилера...")
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=default_backend()
+        )
+
+        public_key = private_key.public_key()
+
+        return private_key, public_key
+
+    def digital_sign(self, data):
+        return self.private_key.sign(
+            data,
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=padding.PSS.MAX_LENGTH
+            ),
+            hashes.SHA256()
+        )
+
+    def initial_shuffle(self):
         self.cards = []
+
+        print("Дилер создает колоду...")
         for suit in Suit:
             for rank in Rank:
                 self.cards.append(Card(rank, suit))
+
+        for i in range(len(self.cards)):
+            self.cards[i].id = str(i)
+
         self.shuffle()
 
     def shuffle(self):
         """Перемешать колоду"""
+        print("Дилер тасует колоду...")
         random.shuffle(self.cards)
+
+    def get_card_for_player(self, player_public_key):
+        """Взять карту из колоды"""
+        if len(self.cards) > 0:
+            card = self.cards.pop()
+            card.visible = True
+
+            R_1 = os.urandom(8).hex()
+            print('Дилер шифрует карту ', card.rank, card.suit)
+
+            sign_data = R_1.encode() + card.id.encode()
+            print("Дилер подписывает карту")
+            signature = self.digital_sign(sign_data)
+
+            data = {
+                'card': card.id,
+                'salt': R_1,
+            }
+
+            byte_data = json.dumps(data).encode()
+
+            card_enc = player_public_key.encrypt(
+                byte_data,
+                padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                             algorithm=hashes.SHA256(),
+                             label=None)
+            )
+
+            return card_enc, signature
+
+        else:
+            print("Deck is empty")
+            return None
 
     def draw(self):
         """Взять карту из колоды"""
