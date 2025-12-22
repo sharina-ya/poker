@@ -126,7 +126,7 @@ def get_community_card_positions(num_cards):
     positions = []
     total_width = num_cards * CARD_WIDTH + (num_cards - 1) * CARD_SPACING
     start_x = CENTER_X - total_width // 2
-    y = CENTER_Y - 10
+    y = CENTER_Y - 30
 
     for i in range(num_cards):
         x = start_x + i * (CARD_WIDTH + CARD_SPACING)
