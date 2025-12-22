@@ -1,6 +1,6 @@
 from enum import Enum
 from collections import Counter
-from deck import Deck, Card, Suit, Rank
+from deck import Dealer, Card, Suit, Rank
 from player import Player
 
 
@@ -126,7 +126,7 @@ class PokerHand:
 class PokerGame:
     def __init__(self, num_players):
         self.players = []
-        self.deck = Deck()
+        self.dealer = Dealer()
         self.community_cards = []
         self.pot = 0
         self.current_bet = 0
@@ -147,12 +147,25 @@ class PokerGame:
             self.active_players.append(player)
 
     def start_new_hand(self):
-        self.deck.reset()
         self.community_cards = []
         self.pot = 0
         self.current_bet = 0
         self.game_phase = "preflop"
         self.players_acted_in_round = set()
+
+        print("Дилер получает публичные ключи игроков...")
+        for player in self.players:
+            self.dealer.players_public_keys.append((player.public_key, player))
+
+        print("Полученные публичные ключи:")
+        print(self.dealer.players_public_keys)
+
+        print("Игроки получают публичный ключ дилера...")
+        for player in self.players:
+            player.dealer_public_key = self.dealer.public_key
+            print(f"{player.name} получил от сервера ключ", player.dealer_public_key)
+
+        self.dealer.initial_shuffle()
 
         for player in self.players:
             player.reset_hand()
@@ -160,9 +173,9 @@ class PokerGame:
         for _ in range(2):
             for player in self.players:
                 if player.is_active:
-                    card = self.deck.draw()
-                    if card:
-                        player.add_card(card)
+                    card_enc, signature = self.dealer.get_card_for_player(player.public_key)
+
+                    player.decrypt_card(card_enc, signature)
 
         self._post_blinds()
 
@@ -232,16 +245,19 @@ class PokerGame:
 
             if self.game_phase == "flop":
                 for _ in range(3):
-                    card = self.deck.draw()
+                    card = self.dealer.draw()
+
                     if card:
                         self.community_cards.append(card)
             elif self.game_phase in ["turn", "river"]:
-                card = self.deck.draw()
+                card = self.dealer.draw()
+
                 if card:
                     self.community_cards.append(card)
 
             if self.game_phase == "showdown":
                 for player in self.active_players:
+
                     if not player.folded:
                         player.show_cards = True
                 return True
