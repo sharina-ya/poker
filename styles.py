@@ -28,7 +28,7 @@ INFO_BG_COLOR = (0, 0, 0, 180)  # Полупрозрачный черный
 
 # Размеры элементов
 TABLE_RADIUS = 180  # Радиус игрового стола
-PLAYER_RADIUS = 35  # Радиус кружка игрока
+PLAYER_RADIUS = 30  # Радиус кружка игрока
 CARD_WIDTH = 45
 CARD_HEIGHT = 70
 CARD_RADIUS = 6
@@ -42,20 +42,22 @@ PLAYER_POSITIONS = {
         (CENTER_X, SCREEN_HEIGHT - 120)  # Нижний
     ],
     3: [  # 3 игрока: треугольник
-        (CENTER_X, 120),  # Верхний
-        (CENTER_X + 180, SCREEN_HEIGHT - 150),  # Правый нижний
-        (CENTER_X - 180, SCREEN_HEIGHT - 150)  # Левый нижний
+        (CENTER_X, 160),  # Верхний
+        (CENTER_X + 100, SCREEN_HEIGHT - 180),  # Правый нижний
+        (CENTER_X - 100, SCREEN_HEIGHT - 180)  # Левый нижний
     ],
     4: [  # 4 игрока: квадрат
         (CENTER_X, 120),  # Верхний
-        (CENTER_X + 200, CENTER_Y),  # Правый
+        (CENTER_X + 200, CENTER_Y-100),  # Правый
         (CENTER_X, SCREEN_HEIGHT - 120),  # Нижний
-        (CENTER_X - 200, CENTER_Y)  # Левый
-    ],
+        (CENTER_X - 200, CENTER_Y-100)  # Левый
+    ]
+    ,
     5: [  # 5 игроков: пентагон
         (CENTER_X, 120),  # Верхний
         (CENTER_X + 180, 180),  # Правый верхний
-        (CENTER_X + 200, CENTER_Y + 100),  # Правый нижний
+        (CENTER_X + 180, CENTER_Y + 160),  # Правый нижний
+
         (CENTER_X, SCREEN_HEIGHT - 120),  # Нижний
         (CENTER_X - 200, CENTER_Y + 100)  # Левый нижний
     ],
@@ -110,8 +112,8 @@ def get_card_positions(player_x, player_y):
     card_y = player_y + PLAYER_RADIUS + 20
 
     # Проверяем, не выходит ли за границы экрана
-    if card_y + CARD_HEIGHT > SCREEN_HEIGHT - 150:  # Оставляем место для кнопок
-        card_y = player_y - PLAYER_RADIUS - CARD_HEIGHT - 20
+    #if card_y + CARD_HEIGHT > SCREEN_HEIGHT - 150:  # Оставляем место для кнопок
+        #card_y = player_y - PLAYER_RADIUS - CARD_HEIGHT - 20
 
     return [
         (start_x, card_y),
